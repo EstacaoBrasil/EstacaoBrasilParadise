@@ -9,16 +9,16 @@
 	//Only report this stuff if we are currently playing.
 	if(GLOB.admin_datums[ckey] && SSticker.current_state == GAME_STATE_PLAYING)
 		var/datum/admins/temp_admin = GLOB.admin_datums[ckey]
-		if(temp_admin.rights & R_MENTOR)
-			var/list/mentorcounter = staff_countup(R_MENTOR)
-			if(mentorcounter[1] == 0) // No active mentors
-				SSdiscord.send2discord_simple(DISCORD_WEBHOOK_MENTOR, "[key_name(src)] logged out - 0 active mentors, [mentorcounter[2]] non-mentor staff, [mentorcounter[3]] inactive mentors.")
-
-		else if(temp_admin.rights & R_BAN)
+		if(temp_admin.rights & R_BAN)
 			message_admins("Admin logout: [key_name_admin(src)]")
 			var/list/admincounter = staff_countup(R_BAN)
 			if(admincounter[1] == 0) // No active admins
-				SSdiscord.send2discord_simple(DISCORD_WEBHOOK_ADMIN, "[key_name(src)] logged out - 0 active admins, [admincounter[2]] non-admin staff, [admincounter[3]] inactive staff.")
+				SSdiscord.send2discord_simple(DISCORD_WEBHOOK_ADMIN, "Last admin [key_name(src)] logged out - 0 active admins, [admincounter[2]] non-admin staff, [admincounter[3]] inactive staff.")
+
+		else if(temp_admin.rights & R_MENTOR)
+			var/list/mentorcounter = staff_countup(R_MENTOR)
+			if(mentorcounter[1] == 0) // No active mentors
+				SSdiscord.send2discord_simple(DISCORD_WEBHOOK_MENTOR, "Last mentor [key_name(src)] logged out - 0 active mentors, [mentorcounter[2]] non-mentor staff, [mentorcounter[3]] inactive mentors.")
 
 	..()
 	update_morgue()

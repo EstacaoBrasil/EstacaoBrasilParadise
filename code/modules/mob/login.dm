@@ -74,4 +74,18 @@
 			AA.display_to(list(src))
 
 	update_client_colour(0)
+
+	if(GLOB.admin_datums[ckey])
+		var/datum/admins/temp_admin = GLOB.admin_datums[ckey]
+		if(temp_admin.rights & R_BAN)
+			message_admins("Admin login: [key_name_admin(src)]")
+			var/list/admincounter = staff_countup(R_BAN)
+			if(admincounter[1] == 1) // One active admin
+				SSdiscord.send2discord_simple(DISCORD_WEBHOOK_ADMIN, "First admin [key_name(src)] logged in - 1 active admins, [admincounter[2]] non-admin staff, [admincounter[3]] inactive staff.")
+
+		else if(temp_admin.rights & R_MENTOR)
+			var/list/mentorcounter = staff_countup(R_MENTOR)
+			if(mentorcounter[1] == 1) // One active mentor
+				SSdiscord.send2discord_simple(DISCORD_WEBHOOK_MENTOR, "First mentor [key_name(src)] logged in - 1 active mentors, [mentorcounter[2]] non-mentor staff, [mentorcounter[3]] inactive mentors.")
+
 	update_morgue()
