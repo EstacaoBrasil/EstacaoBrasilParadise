@@ -464,7 +464,22 @@
 	if(!holder)
 		return
 
-	if(holder.rights & R_MENTOR)
+	if(holder.rights & R_BAN)
+		var/list/admincounter = staff_countup(R_BAN)
+		var/player_count = GLOB.player_list.len
+		
+		if(admincounter[1] == 1)
+			SSdiscord.send2discord_simple(DISCORD_WEBHOOK_ADMIN, "Server is no longer without admins as **[ckey]** logged in. Now attending to **[player_count]** players.")
+
+		if(SSredis.connected)
+			var/msg = "**[ckey]** logged in. **[admincounter[1]]** admin[admincounter[1] == 1 ? "" : "s"] online."
+			var/list/data = list()
+			data["author"] = "alice"
+			data["source"] = GLOB.configuration.system.instance_id
+			data["message"] = msg
+			SSredis.publish("byond.asay", json_encode(data))
+
+	else if(holder.rights & R_MENTOR)
 		if(SSredis.connected)
 			var/list/mentorcounter = staff_countup(R_MENTOR)
 			var/msg = "**[ckey]** logged in. **[mentorcounter[1]]** mentor[mentorcounter[1] == 1 ? "" : "s"] online."
@@ -474,21 +489,28 @@
 			data["message"] = msg
 			SSredis.publish("byond.msay", json_encode(data))
 
-	else if(holder.rights & R_BAN)
+
+/client/proc/announce_leave()
+	if(!holder)
+		return
+
+	if(holder.rights & R_BAN)
+		var/list/admincounter = staff_countup(R_BAN)
+		var/player_count = GLOB.player_list.len - 1
+		var/admin_count = admincounter[1] - 1
+		
+		if(admin_count == 0)
+			SSdiscord.send2discord_simple(DISCORD_WEBHOOK_ADMIN, "Server has **NO ADMINS** as **[ckey]** logged out. Leaving **[player_count]** players unattended.")
+
 		if(SSredis.connected)
-			var/list/admincounter = staff_countup(R_BAN)
-			var/msg = "**[ckey]** logged in. **[admincounter[1]]** admin[admincounter[1] == 1 ? "" : "s"] online."
+			var/msg = "**[ckey]** logged out. **[admin_count]** admin[admin_count == 1 ? "" : "s"] online."
 			var/list/data = list()
 			data["author"] = "alice"
 			data["source"] = GLOB.configuration.system.instance_id
 			data["message"] = msg
 			SSredis.publish("byond.asay", json_encode(data))
 
-/client/proc/announce_leave()
-	if(!holder)
-		return
-
-	if(holder.rights & R_MENTOR)
+	else if(holder.rights & R_MENTOR)
 		if(SSredis.connected)
 			var/list/mentorcounter = staff_countup(R_MENTOR)
 			var/mentor_count = mentorcounter[1]
@@ -499,19 +521,6 @@
 			data["source"] = GLOB.configuration.system.instance_id
 			data["message"] = msg
 			SSredis.publish("byond.msay", json_encode(data))
-
-	else if(holder.rights & R_BAN)
-		if(SSredis.connected)
-			var/list/admincounter = staff_countup(R_BAN)
-			var/admin_count = admincounter[1]
-			admin_count-- // Exclude ourself
-			var/msg = "**[ckey]** logged out. **[admin_count]** admin[admin_count == 1 ? "" : "s"] online."
-			var/list/data = list()
-			data["author"] = "alice"
-			data["source"] = GLOB.configuration.system.instance_id
-			data["message"] = msg
-			SSredis.publish("byond.asay", json_encode(data))
-
 
 /client/proc/donor_loadout_points()
 	if(donator_level > 0 && prefs)
